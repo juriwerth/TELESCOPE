@@ -1,0 +1,31 @@
+ToDo:
+		Yaw
+		Distance -> Speed (MicroSteps)
+		Offline algorithm	    <--_
+		API ?			        |
+		millis(); -> get time for   |
+
+###############################################
+
+
+drive gear: 50 teeth
+driven gear: (7 x 98) + 39 == 725
+
+gear ratio: 725 / 50 == 14.5
+
+steps = 3200; #steps per rotaion of drive gear
+360: 14.5 x steps
+
+
+///////////////////////////////////////////////
+
+gear_ratio = 14.5
+steps = 3200
+
+def steps(angle, gear_ratio, steps):
+	fraction = angle / 360
+	temp = gear_ration / fraction
+
+	return temp * steps
+
+///////////////////////////////////////////////
