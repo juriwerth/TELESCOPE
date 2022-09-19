@@ -1,27 +1,32 @@
 #include "Telescope.h"
 
 float gearRatioYaw = 14.5; // 725 (driven gear [(7 x 98) + 39]) / 50 (drive gear)
-int stepsYaw = 3200; // stepsYaw per rotation | 200 (default) * 16 (microsteps)
+int microstepsYaw = 3200; // stepsYaw per rotation | 200 (default) * 16 (microsteps)
 
 // Read Serial for new yaw
-float readSerial(float yaw) {
-  if (Serial.available() > 1) {
-    float parsedYaw = Serial.parseFloat();
-    if (yaw != parsedYaw) {
-      yaw = parsedYaw;
+float readSerial(float pitch, float yaw) {
+  float values[2] = {};
+  int idx = 0;
+
+  Serial.println("Please enter angles; First pitch, then yaw");
+  while (values[0] == NULL || values[1] == NULL) {
+    if (Serial.available() > 1) {
+      float parsedFloat = Serial.parseFloat();
+      values[idx] = parsedFloat;
+      idx++;
     }
   }
-  return yaw;
+  return values[0], values[1];
 }
 
-// Current- / New- yaw difference
-int calculateYaw(float currentYaw, float yaw) {
-  return yaw - currentYaw;
+// Current / New delta
+int calculateDelta(float currentPitch, float pitch ,float currentYaw, float yaw) {
+  return pitch - currentPitch, yaw - currentYaw;
 }
 
 // Yaw difference to motor steps
-int calculateStepsYaw(float yaw) {
+int calculateSteps(float pitch, float yaw) {
   float fraction = yaw / 360;
   float temp = gearRatioYaw / fraction;
-  return temp * stepsYaw;
+  return pitch, temp * microstepsYaw;
 }
