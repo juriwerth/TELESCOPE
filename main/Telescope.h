@@ -3,14 +3,14 @@
 
 #include <Arduino.h>
 
-float readSerial(float yaw);
+inline int deltaPitch;
+inline int deltaYaw;
+inline int stepsPitch;
+inline int stepsYaw;
 
-// Pitch
-//int calculateYaw(float currentYaw, float yaw);
-//int calculateStepsYaw(float yaw);
+float readSerial(float pitch, float yaw);
 
-// Yaw
-int calculateYaw(float currentYaw, float yaw);
-int calculateStepsYaw(float yaw);
+int calculateDelta(float currentPitch, float pitch, float currentYaw, float yaw);
+int calculateSteps(float pitch, float yaw);
 
 #endif
