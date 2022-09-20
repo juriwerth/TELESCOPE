@@ -1,55 +1,40 @@
 #include "Telescope.h"
 
-void setup() {
-  Serial.begin(9600);                                                 // Initialising serial com
-  pinMode(pulsYaw, OUTPUT);                                                     // Puls (1 [On + Off] Puls: 1 step)
-  pinMode(dirYaw, OUTPUT);                                                     // Direction of rotation
-  pinMode(pulsPitch, OUTPUT);
-  pinMode(dirPitch, OUTPUT);
-  pinMode(switchPin, INPUT);
+const float gearRatioPitch = 14.5;
+const int microstepsPitch = 3200;
+const float gearRatioYaw = 14.5; // 725 (driven gear [(7 x 98) + 39]) / 50 (drive gear)
+const int microstepsYaw = 3200; // stepsYaw per rotation | 200 (default) * 16 (microsteps)
+
+// Read Serial for new yaw
+float readSerial(float rotation, bool identification) {
+  float temp = rotation;
+  if (identification == 0) {Serial.println("Please enter a PITCH value (0 - 90) ");}
+  else {Serial.println("Please enter a YAW value (0 - 360) ");}
+  while (rotation == temp) {
+    if (Serial.available() > 1) {
+      float parsedFloat = Serial.parseFloat();
+      rotation = parsedFloat;
+    }
+  }
+  Serial.println(rotation);
+  return rotation;
 }
 
-void loop() {
-  pitch = readSerial(pitch, 0);
-  yaw = readSerial(yaw, 1);
-  deltaPitch = calculateDelta(currentPitch, pitch);
-  deltaYaw = calculateDelta(currentYaw, yaw);
-  stepsPitch = calculateStepsPitch(deltaPitch);
-  stepsYaw = calculateStepsYaw(deltaYaw);
+// Current / New delta
+float calculateDelta(float current, float rotation) {
+  return rotation - current;
+}
 
-  Serial.println("#####################################################");
-  if (stepsPitch > 0) {
-    digitalWrite(dirPitch, HIGH);
-  } else {
-    digitalWrite(dirPitch, LOW);
-    stepsPitch = stepsPitch * -1;
-  }
-  if (stepsYaw > 0) {
-    digitalWrite(dirYaw, HIGH);
-  } else {
-    digitalWrite(dirYaw, LOW);
-    stepsYaw = stepsYaw * -1;
-  }
+// Pitch delta to motor steps
+long calculateStepsPitch(float delta) {
+  float fraction = delta / 360.0;
+  float temp = gearRatioPitch / fraction;
+  return long(temp * microstepsPitch);
+}
 
-  while (stepsPitch + stepsYaw > 0) {
-    Serial.println("Pitch: " + String(stepsPitch) + seperator + "Yaw: " + String(stepsYaw));
-    while (!digitalRead(switchPin)) {}
-    if (stepsPitch > 0) {
-      digitalWrite(pulsPitch, HIGH);
-      delayMicroseconds(500);
-      digitalWrite(pulsPitch, LOW);
-      delayMicroseconds(500);
-      (stepsPitch > 0) ? stepsPitch -= 1 : stepsPitch += 1;
-    }
-    if (stepsYaw > 0) {
-      digitalWrite(pulsYaw, HIGH);
-      delayMicroseconds(500);
-      digitalWrite(pulsYaw, LOW);
-      delayMicroseconds(500);
-      (stepsYaw > 0) ? stepsYaw -= 1 : stepsYaw += 1;
-    }
-  }
-
-  currentPitch = pitch;
-  currentYaw = yaw;
+// Yaw delta to motor steps
+long calculateStepsYaw(float delta) {
+  float fraction = delta / 360.0;
+  float temp = gearRatioYaw / fraction;
+  return long(temp * microstepsYaw);
 }
