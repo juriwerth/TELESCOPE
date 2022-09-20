@@ -3,14 +3,25 @@
 
 #include <Arduino.h>
 
-inline int deltaPitch;
-inline int deltaYaw;
-inline int stepsPitch;
-inline int stepsYaw;
+inline float pitch;
+inline float currentPitch;
+inline float yaw;
+inline float currentYaw;
+inline long stepsPitch;
+inline long stepsYaw;
+inline float deltaPitch;
+inline float deltaYaw;
+const inline String seperator = " ";
 
-float readSerial(float pitch, float yaw);
+const inline int pulsYaw = 2;
+const inline int dirYaw = 3;
+const inline int pulsPitch = 5;
+const inline int dirPitch = 6;
+const inline int switchPin = 12;
 
-int calculateDelta(float currentPitch, float pitch, float currentYaw, float yaw);
-int calculateSteps(float pitch, float yaw);
+float readSerial(float rotation, bool identification);
+float calculateDelta(float current, float rotation);
+long calculateStepsPitch(float delta);
+long calculateStepsYaw(float delta);
 
 #endif
