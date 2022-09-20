@@ -1,45 +1,47 @@
 #include "Telescope.h"
 
-float currentYaw = 0.0;
-float yaw = 0.0;
-float currentPitch = 0.0;
-float pitch = 0.0;
-
-String seperator = " ";
-
-int pulsYaw = 2;
-int dirYaw = 3;
-int pulsPitch = 5;
-int dirPitch = 6;
-
 void setup() {
-  Serial.begin(9600);                                                     // Initialising serial com
-  pinMode(5, OUTPUT);                                                     // Puls (1 [On + Off] Puls: 1 step)
-  pinMode(2, OUTPUT);                                                     // Direction of rotation
+  Serial.begin(9600);                                                 // Initialising serial com
+  pinMode(pulsYaw, OUTPUT);                                                     // Puls (1 [On + Off] Puls: 1 step)
+  pinMode(dirYaw, OUTPUT);                                                     // Direction of rotation
+  pinMode(pulsPitch, OUTPUT);
+  pinMode(dirPitch, OUTPUT);
+  pinMode(switchPin, INPUT);
 }
 
 void loop() {
-  (pitch, yaw) = readSerial(pitch, yaw);                                  // Read serial for new yaw
-  (deltaPitch, deltaYaw) = calculateDelta(currentPitch, pitch, currentYaw, yaw);  // Current / New delta
-  (stepsPitch, stepsYaw) = calculateSteps(deltaPitch, deltaYaw);                        // Yaw difference to motor steps
-  
-  //Serial.println("Pitch: " + seperator + deltaPitch + seperator + "Yaw: " + seperator + stepsYaw);
-  (stepsPitch > 0) ? digitalWrite(dirPitch, HIGH) : digitalWrite(dirPitch ,LOW);             // Set direction of rotation
-  (stepsYaw > 0)  ? digitalWrite(dirYaw ,HIGH) : digitalWrite(dirYaw ,LOW); 
+  pitch = readSerial(pitch, 0);
+  yaw = readSerial(yaw, 1);
+  deltaPitch = calculateDelta(currentPitch, pitch);
+  deltaYaw = calculateDelta(currentYaw, yaw);
+  stepsPitch = calculateStepsPitch(deltaPitch);
+  stepsYaw = calculateStepsYaw(deltaYaw);
 
-  (stepsPitch < 0) ? stepsPitch *= -1 : true;
-  (stepsYaw < 0) ? stepsYaw *= -1 : true;
+  Serial.println("#####################################################");
+  if (stepsPitch > 0) {
+    digitalWrite(dirPitch, HIGH);
+  } else {
+    digitalWrite(dirPitch, LOW);
+    stepsPitch = stepsPitch * -1;
+  }
+  if (stepsYaw > 0) {
+    digitalWrite(dirYaw, HIGH);
+  } else {
+    digitalWrite(dirYaw, LOW);
+    stepsYaw = stepsYaw * -1;
+  }
 
   while (stepsPitch + stepsYaw > 0) {
-    Serial.println("Pitch: " + seperator + stepsPitch + seperator + "Yaw: " + seperator + stepsYaw);
-    if (stepsPitch) {
+    Serial.println("Pitch: " + String(stepsPitch) + seperator + "Yaw: " + String(stepsYaw));
+    while (!digitalRead(switchPin)) {}
+    if (stepsPitch > 0) {
       digitalWrite(pulsPitch, HIGH);
       delayMicroseconds(500);
       digitalWrite(pulsPitch, LOW);
       delayMicroseconds(500);
       (stepsPitch > 0) ? stepsPitch -= 1 : stepsPitch += 1;
     }
-    if (stepsYaw) {
+    if (stepsYaw > 0) {
       digitalWrite(pulsYaw, HIGH);
       delayMicroseconds(500);
       digitalWrite(pulsYaw, LOW);
