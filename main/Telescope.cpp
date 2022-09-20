@@ -1,32 +1,55 @@
 #include "Telescope.h"
 
-float gearRatioYaw = 14.5; // 725 (driven gear [(7 x 98) + 39]) / 50 (drive gear)
-int microstepsYaw = 3200; // stepsYaw per rotation | 200 (default) * 16 (microsteps)
+void setup() {
+  Serial.begin(9600);                                                 // Initialising serial com
+  pinMode(pulsYaw, OUTPUT);                                                     // Puls (1 [On + Off] Puls: 1 step)
+  pinMode(dirYaw, OUTPUT);                                                     // Direction of rotation
+  pinMode(pulsPitch, OUTPUT);
+  pinMode(dirPitch, OUTPUT);
+  pinMode(switchPin, INPUT);
+}
 
-// Read Serial for new yaw
-float readSerial(float pitch, float yaw) {
-  float values[2] = {};
-  int idx = 0;
+void loop() {
+  pitch = readSerial(pitch, 0);
+  yaw = readSerial(yaw, 1);
+  deltaPitch = calculateDelta(currentPitch, pitch);
+  deltaYaw = calculateDelta(currentYaw, yaw);
+  stepsPitch = calculateStepsPitch(deltaPitch);
+  stepsYaw = calculateStepsYaw(deltaYaw);
 
-  Serial.println("Please enter angles; First pitch, then yaw");
-  while (values[0] == NULL || values[1] == NULL) {
-    if (Serial.available() > 1) {
-      float parsedFloat = Serial.parseFloat();
-      values[idx] = parsedFloat;
-      idx++;
+  Serial.println("#####################################################");
+  if (stepsPitch > 0) {
+    digitalWrite(dirPitch, HIGH);
+  } else {
+    digitalWrite(dirPitch, LOW);
+    stepsPitch = stepsPitch * -1;
+  }
+  if (stepsYaw > 0) {
+    digitalWrite(dirYaw, HIGH);
+  } else {
+    digitalWrite(dirYaw, LOW);
+    stepsYaw = stepsYaw * -1;
+  }
+
+  while (stepsPitch + stepsYaw > 0) {
+    Serial.println("Pitch: " + String(stepsPitch) + seperator + "Yaw: " + String(stepsYaw));
+    while (!digitalRead(switchPin)) {}
+    if (stepsPitch > 0) {
+      digitalWrite(pulsPitch, HIGH);
+      delayMicroseconds(500);
+      digitalWrite(pulsPitch, LOW);
+      delayMicroseconds(500);
+      (stepsPitch > 0) ? stepsPitch -= 1 : stepsPitch += 1;
+    }
+    if (stepsYaw > 0) {
+      digitalWrite(pulsYaw, HIGH);
+      delayMicroseconds(500);
+      digitalWrite(pulsYaw, LOW);
+      delayMicroseconds(500);
+      (stepsYaw > 0) ? stepsYaw -= 1 : stepsYaw += 1;
     }
   }
-  return values[0], values[1];
-}
 
-// Current / New delta
-int calculateDelta(float currentPitch, float pitch ,float currentYaw, float yaw) {
-  return pitch - currentPitch, yaw - currentYaw;
-}
-
-// Yaw difference to motor steps
-int calculateSteps(float pitch, float yaw) {
-  float fraction = yaw / 360;
-  float temp = gearRatioYaw / fraction;
-  return pitch, temp * microstepsYaw;
+  currentPitch = pitch;
+  currentYaw = yaw;
 }
