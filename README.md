@@ -1,3 +1,4 @@
-Smart telescope
+TELESCOPE:
+Smart telescope algorithm and robotic
 
-🪐
+🪐 = 🔭 + 🤖
