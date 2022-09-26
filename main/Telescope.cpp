@@ -1,5 +1,6 @@
 #include "Telescope.h"
 
+// Declarations
 const int microstepsPitch = 1600;
 const float gearRatioYaw = 14.5; // 725 (driven gear [(7 x 98) + 39]) / 50 (drive gear)
 const int microstepsYaw = 3200; // stepsYaw per rotation | 200 (default) * 16 (microsteps)
@@ -43,6 +44,7 @@ long calculateStepsYaw(float delta) {
   return temp * microstepsYaw;
 }
 
+// Setting the direction of the motors
 long direction(long steps, int dirPin) {
   if (steps > 0) {
     digitalWrite(dirPin, HIGH);
@@ -53,15 +55,12 @@ long direction(long steps, int dirPin) {
   }
 }
 
+// Tracking algorithm
 void algorithm(float polarPitch, float polarYaw, float currentPitch, float currentYaw, float *pitch, float *yaw) {
-  extern float pitch;
-  extern float yaw;
-  extern long stepsPitch;
-  extern long stepsYaw;
   if (millis() - currentMillis >= 15000) {  // jede 15 sec 0,0625 grad bewegen
     unsigned int diffPitch = (polarPitch > currentPitch) ? polarPitch - currentPitch: currentPitch - polarPitch;
     unsigned int diffYaw = (polarYaw > currentYaw) ? polarYaw - currentYaw: currentYaw - polarYaw;
-    unsigned int radius = sqrt(radiusPitch * radiusPitch + radiusYaw * radiusYaw);
+    unsigned int radius = sqrt(diffPitch * diffPitch + diffYaw * diffYaw);
     float angle = atan(diffYaw / diffPitch);
     *pitch = radius * sin(angle + 0.0625);
     *yaw = radius * cos(angle + 0.0625);
@@ -70,14 +69,18 @@ void algorithm(float polarPitch, float polarYaw, float currentPitch, float curre
 }
 
 // Telescope alignment before commands
-bool preperation(int dir, int puls) {
+bool preperation(int puls, int dir, int puls2) {
+  Serial.println("Aligning the TELESCOPE ...");
+  digitalWrite(pitch2Enable, HIGH);
+  digitalWrite(dir, HIGH);
+  while (digitalRead(switch90) == LOW) {
+    long _ = executeSteps(1, puls, 1);
+  }
+  digitalWrite(pitch2Enable, LOW);
   digitalWrite(dir, LOW);
   while (digitalRead(switch0) == LOW) {
-    Serial.println("Aligning the TELESCOPE ...");
-    digitalWrite(puls, HIGH);
-    delayMicroseconds(500);
-    digitalWrite(puls, LOW);
-    delayMicroseconds(500);
+    (digitalRead(switch90) == LOW) ? long _ = executeSteps(1, puls, 1) : true;
+    long _ = executeSteps(1, puls2, 1);
   }
   return true;
 }

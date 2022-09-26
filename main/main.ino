@@ -1,27 +1,35 @@
-#include "Telescope.h"  // Importing the library
+#include "Telescope.h"
 
+// Setup
 void setup() {
-  Serial.begin(9600);  // Initialising serial com
-  pinMode(pulsYaw, OUTPUT);  // Puls (1 [On + Off] Puls: 1 step)
-  pinMode(dirYaw, OUTPUT);  // Direction of rotation pin
-  pinMode(pulsPitch, OUTPUT);  // Puls (1 [On + Off] Puls: 1 step)
-  pinMode(dirPitch, OUTPUT);  // Direction of rotation pin
-  pinMode(switch0, INPUT);  // 0 Degree switch
-  pinMode(switch90, INPUT);  // 90 Degree switch
-  pinMode(resetBtn, INPUT);  // Reset button
+  Serial.begin(9600);
+  pinMode(pulsYaw, OUTPUT);
+  pinMode(dirYaw, OUTPUT);
+  pinMode(pulsPitch, OUTPUT);
+  pinMode(dirPitch, OUTPUT);
+  pinMode(pitch2Enable, OUTPUT);
+  pinMode(switch0, INPUT);
+  pinMode(switch90, INPUT);
+  pinMode(resetBtn, INPUT);
 }
 
+// Main loop
 void loop() {
-  if (!polar) {  // Check if polar boolian is false
-    Serial.println("Enter the coodinates of the polar star: ");  // Serial printing
-    polarPitch = readSerial(polarPitch, 0);  // Serial reading the value for polarPitch
-    polarYaw = readSerial(polarYaw, 1);  // Serial reading the value for polarYaw
+  // Checking if polar boolian is false
+  if (!polar) {
+    Serial.println("Enter the coodinates of the polar star: ");
+    polarPitch = readSerial(polarPitch, 0);
+    polarYaw = readSerial(polarYaw, 1);
   }
-  if (reset) {
+
+  // Checking if the reset boolian is true
+  if (reset) { 
     pitch = readSerial(pitch, 0);
     yaw = readSerial(yaw, 1);
     reset = false;
   }
+
+  // Checking if the values currentPitch and pitch are not equal
   if (currentPitch != pitch) {
     deltaPitch = calculateDelta(currentPitch, pitch);
     deltaYaw = calculateDelta(currentYaw, yaw);
@@ -29,22 +37,29 @@ void loop() {
     stepsYaw = calculateStepsYaw(deltaYaw);
   }
 
-  stepsPitch = direction(stepsPitch, dirPitch);  // Setting motor rotation
-  stepsYaw = direction(stepsYaw, dirYaw);  // Setting motor rotation
+  // Setting the rotation direction of the motors
+  stepsPitch = direction(stepsPitch, dirPitch);
+  stepsYaw = direction(stepsYaw, dirYaw);
 
-  (!prep) ? prep = preperation(dirPitch, pulsPitch) : true;  // Telescope alignment
-  (stepsPitch + stepsYaw < 1) ? algorithm(currentPitch, currentYaw, &pitch, &yaw) : true;  //Tracking algorithm
+  // Checking if the prep boolian is false
+  (!prep) ? prep = preperation(dirPitch, pulsPitch, pulsPitch2) : true;
+  (stepsPitch + stepsYaw < 1) ? algorithm(currentPitch, currentYaw, &pitch, &yaw) : true;
 
-  while (stepsPitch + stepsYaw > 0 && !reset) {  // While steps > 0 and reset is false
-    (digitalRead(resetBtn) == HIGH  || (digitalRead(switch0) == HIGH and digitalRead(switch90) == HIGH)) ? reset = true : true;  // Checking the resetPin, if HIGH, setting reset true 
+  // Looping threw the folloing code wihle steps > 0 and reset is false
+  while (stepsPitch + stepsYaw > 0 && !reset) {
+    // If the reset button or switches are pressed, reset becomes true
+    (digitalRead(resetBtn) == HIGH  || (digitalRead(switch0) == HIGH and digitalRead(switch90) == HIGH)) ? reset = true : true;
 
-    Serial.println("Pitch: " + String(stepsPitch) + seperator + "Yaw: " + String(stepsYaw));  // Serial printing the pitch and yaw steps
-    while (digitalRead(switch90) == LOW) {}  // Pause if the 90 Degree switch is active
+    // Serial printing pitch and yaw values
+    Serial.println("Pitch: " + String(stepsPitch) + seperator + "Yaw: " + String(stepsYaw));
+    while (digitalRead(switch90) == LOW) {} 
 
-    stepsPitch = executeSteps(stepsPitch, pulsPitch, 0);  // Executing pitch steps
-    stepsYaw = executeSteps(stepsYaw, pulsYaw, 1);  // Executing yaw steps
+    // Executing motor steps
+    stepsPitch = executeSteps(stepsPitch, pulsPitch, 0);
+    stepsYaw = executeSteps(stepsYaw, pulsYaw, 1);
   }
 
-  currentPitch = pitch;  // Setting the currentPitch value to pitch
-  currentYaw = yaw;  // Setting the currentYaw value tp yaw
+  // Setting the current values to the new values
+  currentPitch = pitch;
+  currentYaw = yaw;
 }
