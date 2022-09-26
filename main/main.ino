@@ -33,7 +33,7 @@ void loop() {
   stepsYaw = direction(stepsYaw, dirYaw);  // Setting motor rotation
 
   (!prep) ? prep = preperation(dirPitch, pulsPitch) : true;  // Telescope alignment
-  (stepsPitch + stepsYaw < 1) ? algorithm(currentPitch, currentYaw) : true;  //Tracking algorithm
+  (stepsPitch + stepsYaw < 1) ? algorithm(currentPitch, currentYaw, &pitch, &yaw) : true;  //Tracking algorithm
 
   while (stepsPitch + stepsYaw > 0 && !reset) {  // While steps > 0 and reset is false
     (digitalRead(resetBtn) == HIGH  || (digitalRead(switch0) == HIGH and digitalRead(switch90) == HIGH)) ? reset = true : true;  // Checking the resetPin, if HIGH, setting reset true 

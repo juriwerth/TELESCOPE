@@ -30,8 +30,9 @@ float readSerial(float rotation, bool identification);
 float calculateDelta(float current, float rotation);
 long calculateStepsPitch(float delta);
 long calculateStepsYaw(float delta);
-bool preperatrion(int dir, int plus);
 long direction(long steps, int dirPin)
+bool preperatrion(int dir, int plus);
+void algorithm(float polarPitch, float polarYaw, float currentPitch, float currentYaw, float *pitch, float *yaw);
 long executeSteps(long steps, int puls, bool identificator);
 
 #endif

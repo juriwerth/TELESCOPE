@@ -53,7 +53,7 @@ long direction(long steps, int dirPin) {
   }
 }
 
-float alorithm(float polarPitch, float polarYaw, float currentPitch, float currentYaw) {
+void algorithm(float polarPitch, float polarYaw, float currentPitch, float currentYaw, float *pitch, float *yaw) {
   extern float pitch;
   extern float yaw;
   extern long stepsPitch;
@@ -63,8 +63,8 @@ float alorithm(float polarPitch, float polarYaw, float currentPitch, float curre
     unsigned int diffYaw = (polarYaw > currentYaw) ? polarYaw - currentYaw: currentYaw - polarYaw;
     unsigned int radius = sqrt(radiusPitch * radiusPitch + radiusYaw * radiusYaw);
     float angle = atan(diffYaw / diffPitch);
-    pitch = radius * sin(angle + 0.0625);
-    yaw = radius * cos(angle + 0.0625);
+    *pitch = radius * sin(angle + 0.0625);
+    *yaw = radius * cos(angle + 0.0625);
     currentMillis = millis();
   }
 }
