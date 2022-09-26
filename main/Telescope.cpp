@@ -1,20 +1,10 @@
 #include "Telescope.h"
 
-const float gearRatioPitch = 14.5;
 const int microstepsPitch = 1600;
 const float gearRatioYaw = 14.5; // 725 (driven gear [(7 x 98) + 39]) / 50 (drive gear)
 const int microstepsYaw = 3200; // stepsYaw per rotation | 200 (default) * 16 (microsteps)
 const float fullRotationPitch = 11900;
-
-// Telescope alignment before commands
-void preperation() {
-  if (digitalRead(switch0) == LOW) {
-    digitalWrite(pulsPitch, HIGH);
-    delayMicroseconds(500);
-    digitalWrite(pulsPitch, LOW);
-    delayMicroseconds(500);
-  }
-}
+unsigned long currentMillis;
 
 // Read Serial for new yaw
 float readSerial(float rotation, bool identificator) {
@@ -51,6 +41,45 @@ long calculateStepsYaw(float delta) {
   float fraction = delta / 360.0;
   float temp = gearRatioYaw * fraction;
   return temp * microstepsYaw;
+}
+
+long direction(long steps, int dirPin) {
+  if (steps > 0) {
+    digitalWrite(dirPin, HIGH);
+    return steps;
+  } else {
+    digitalWrite(dirPin, LOW);
+    return stepsPitch * -1;
+  }
+}
+
+float alorithm(float polarPitch, float polarYaw, float currentPitch, float currentYaw) {
+  extern float pitch;
+  extern float yaw;
+  extern long stepsPitch;
+  extern long stepsYaw;
+  if (millis() - currentMillis >= 15000) {  // jede 15 sec 0,0625 grad bewegen
+    unsigned int diffPitch = (polarPitch > currentPitch) ? polarPitch - currentPitch: currentPitch - polarPitch;
+    unsigned int diffYaw = (polarYaw > currentYaw) ? polarYaw - currentYaw: currentYaw - polarYaw;
+    unsigned int radius = sqrt(radiusPitch * radiusPitch + radiusYaw * radiusYaw);
+    float angle = atan(diffYaw / diffPitch);
+    pitch = radius * sin(angle + 0.0625);
+    yaw = radius * cos(angle + 0.0625);
+    currentMillis = millis();
+  }
+}
+
+// Telescope alignment before commands
+bool preperation(int dir, int puls) {
+  digitalWrite(dir, LOW);
+  while (digitalRead(switch0) == LOW) {
+    Serial.println("Aligning the TELESCOPE ...");
+    digitalWrite(puls, HIGH);
+    delayMicroseconds(500);
+    digitalWrite(puls, LOW);
+    delayMicroseconds(500);
+  }
+  return true;
 }
 
 // Execute steps 
