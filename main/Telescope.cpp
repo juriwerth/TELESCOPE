@@ -69,18 +69,19 @@ void algorithm(float polarPitch, float polarYaw, float currentPitch, float curre
 }
 
 // Telescope alignment before commands
-bool preperation(int puls, int dir, int puls2) {
+bool preparation(int puls, int dir, int puls2, int enable) {
+  long _;
   Serial.println("Aligning the TELESCOPE ...");
   digitalWrite(pitch2Enable, HIGH);
   digitalWrite(dir, HIGH);
-  while (digitalRead(switch90) == LOW) {
-    long _ = executeSteps(1, puls, 1);
+  while (digitalRead(switch90) == HIGH) {
+    _ = executeSteps(1, puls, 1);
   }
   digitalWrite(pitch2Enable, LOW);
   digitalWrite(dir, LOW);
-  while (digitalRead(switch0) == LOW) {
-    (digitalRead(switch90) == LOW) ? long _ = executeSteps(1, puls, 1) : true;
-    long _ = executeSteps(1, puls2, 1);
+  while (digitalRead(switch0) == HIGH) {
+    _ = executeSteps(1, puls2, 1);
+    (digitalRead(switch90) == HIGH) ? _ = executeSteps(1, puls, 1) : true;
   }
   return true;
 }
@@ -93,6 +94,10 @@ long executeSteps(long steps, int puls, bool identificator) {
       digitalWrite(puls, LOW);
       delayMicroseconds(500);
       if (identificator == 0) {
+        digitalWrite(puls, HIGH);
+        delayMicroseconds(500);
+        digitalWrite(puls, LOW);
+        delayMicroseconds(500);
         if (digitalRead(switch0) == HIGH) {
           (steps > 0) ? steps -= 1 : steps += 1;
         }
