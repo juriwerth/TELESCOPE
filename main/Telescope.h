@@ -11,27 +11,29 @@ inline long stepsPitch;
 inline long stepsYaw;
 inline float deltaPitch;
 inline float deltaYaw;
-const inline float polarPitch;
-const inline float polarYaw;
+inline float polarPitch;
+inline float polarYaw;
 inline bool polar = false;
 inline bool prep = false;
 inline bool reset = true;
 const inline String seperator = " ";
 
 const inline int pulsPitch = 2;
-const inline int dirPitch = 3;
-const inline int pulsYaw = 4;
-const inline int dirYaw = 5;
-const inline int switch0 = 12;
+const inline int pulsPitch2 = 3;
+const inline int dirPitch = 4;
+const inline int pulsYaw = 14;
+const inline int dirYaw = 12;
+const inline int switch0 = 15;
 const inline int switch90 = 13;
 const inline int resetBtn = 11;
+const inline int pitch2Enable = 10;
 
 float readSerial(float rotation, bool identification);
 float calculateDelta(float current, float rotation);
 long calculateStepsPitch(float delta);
 long calculateStepsYaw(float delta);
-long direction(long steps, int dirPin)
-bool preperatrion(int dir, int plus);
+long direction(long steps, int dirPin);
+bool preparation(int dir, int plus, int puls2, int pitch2Enable);
 void algorithm(float polarPitch, float polarYaw, float currentPitch, float currentYaw, float *pitch, float *yaw);
 long executeSteps(long steps, int puls, bool identificator);
 
