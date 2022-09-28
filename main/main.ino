@@ -2,15 +2,16 @@
 
 // Setup
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
+  pinMode(pulsPitch, OUTPUT);
+  pinMode(pulsPitch2, OUTPUT);
+  pinMode(dirPitch, OUTPUT);
   pinMode(pulsYaw, OUTPUT);
   pinMode(dirYaw, OUTPUT);
-  pinMode(pulsPitch, OUTPUT);
-  pinMode(dirPitch, OUTPUT);
   pinMode(pitch2Enable, OUTPUT);
-  pinMode(switch0, INPUT);
-  pinMode(switch90, INPUT);
-  pinMode(resetBtn, INPUT);
+  pinMode(switch0, INPUT_PULLUP);
+  pinMode(switch90, INPUT_PULLUP);
+  //pinMode(resetBtn, INPUT_PULLUP);
 }
 
 // Main loop
@@ -20,6 +21,7 @@ void loop() {
     Serial.println("Enter the coodinates of the polar star: ");
     polarPitch = readSerial(polarPitch, 0);
     polarYaw = readSerial(polarYaw, 1);
+    polar = true;
   }
 
   // Checking if the reset boolian is true
@@ -42,13 +44,15 @@ void loop() {
   stepsYaw = direction(stepsYaw, dirYaw);
 
   // Checking if the prep boolian is false
-  (!prep) ? prep = preperation(dirPitch, pulsPitch, pulsPitch2) : true;
-  (stepsPitch + stepsYaw < 1) ? algorithm(currentPitch, currentYaw, &pitch, &yaw) : true;
+  (!prep) ? prep = preparation(pulsPitch, dirPitch, pulsPitch2, pitch2Enable) : true;
+  if (stepsPitch + stepsYaw < 1) {
+    algorithm(polarPitch, polarYaw, currentPitch, currentYaw, &pitch, &yaw);
+  }
 
   // Looping threw the folloing code wihle steps > 0 and reset is false
   while (stepsPitch + stepsYaw > 0 && !reset) {
     // If the reset button or switches are pressed, reset becomes true
-    (digitalRead(resetBtn) == HIGH  || (digitalRead(switch0) == HIGH and digitalRead(switch90) == HIGH)) ? reset = true : true;
+    //(digitalRead(resetBtn) == HIGH  || (digitalRead(switch0) == HIGH and digitalRead(switch90) == HIGH)) ? reset = true : true;
 
     // Serial printing pitch and yaw values
     Serial.println("Pitch: " + String(stepsPitch) + seperator + "Yaw: " + String(stepsYaw));
@@ -56,6 +60,7 @@ void loop() {
 
     // Executing motor steps
     stepsPitch = executeSteps(stepsPitch, pulsPitch, 0);
+    long _ = executeSteps(stepsPitch, pulsPitch2, 0);
     stepsYaw = executeSteps(stepsYaw, pulsYaw, 1);
   }
 
@@ -63,3 +68,4 @@ void loop() {
   currentPitch = pitch;
   currentYaw = yaw;
 }
+
