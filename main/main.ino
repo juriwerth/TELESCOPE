@@ -1,69 +1,41 @@
-#include "Telescope.h"
+#ifndef TELESCOPE_H
+#define TELESCOPE_H
 
-// Setup
-void setup() {
-  Serial.begin(115200);
-  pinMode(pulsPitch, OUTPUT);
-  pinMode(pulsPitch2, OUTPUT);
-  pinMode(dirPitch, OUTPUT);
-  pinMode(pulsYaw, OUTPUT);
-  pinMode(dirYaw, OUTPUT);
-  pinMode(pitch2Enable, OUTPUT);
-  pinMode(switch0, INPUT_PULLUP);
-  pinMode(switch90, INPUT_PULLUP);
-}
+#include <Arduino.h>
 
-// Main loop
-void loop() {
-  // Checking if polar boolian is false
-  if (!polar) {
-    Serial.println("Enter the coodinates of the polar star: ");
-    polarPitch = readSerial(polarPitch, 0);
-    polarYaw = readSerial(polarYaw, 1);
-    polar = true;
-  }
+inline float pitch;
+inline float yaw;
+inline float currentPitch;
+inline float currentYaw;
+inline long stepsPitch;
+inline long stepsYaw;
+inline float deltaPitch;
+inline float deltaYaw;
+inline float polarPitch;
+inline float polarYaw;
+inline bool polar = false;
+inline bool prep = true;
+inline bool reset = true;
+const inline String seperator = " ";
 
-  // Checking if the reset boolian is true
-  if (reset) { 
-    pitch = readSerial(pitch, 0);
-    yaw = readSerial(yaw, 1);
-    reset = false;
-  }
+const inline int pulsPitch = 22;
+const inline int pulsPitch2 = 5;
+const inline int dirPitch = 23;
+const inline int pulsYaw = 26;
+const inline int dirYaw = 25;
+const inline int switch0 = 32; 
+const inline int switch90 = 33;
+const inline int pitchEnable = 21;
+const inline int pitch2Enable = 19;
 
-  // Checking if the values currentPitch and pitch are not equal
-  if (currentPitch != pitch) {
-    deltaPitch = calculateDelta(currentPitch, pitch);
-    deltaYaw = calculateDelta(currentYaw, yaw);
-    stepsPitch = calculateStepsPitch(deltaPitch);
-    stepsYaw = calculateStepsYaw(deltaYaw);
-  }
+float readSerial(float rotation, bool identification);
+float calculateDelta(float current, float rotation);
+long calculateStepsPitch(float delta);
+long calculateStepsYaw(float delta);
+long direction(long steps, int dirPin);
+bool preparation(int dir, int plus, int puls2, int pitch2Enable);
+void algorithm(float polarPitch, float polarYaw, float currentPitch, float currentYaw, float *pitch, float *yaw);
+long executeSteps(long steps, int puls, bool identificator);
 
-  // Setting the rotation direction of the motors
-  stepsPitch = direction(stepsPitch, dirPitch);
-  stepsYaw = direction(stepsYaw, dirYaw);
+#endif
 
-  // Checking if the prep boolian is false
-  (!prep) ? prep = preparation(pulsPitch, dirPitch, pulsPitch2, pitch2Enable) : true;
-  if (stepsPitch + stepsYaw < 1) {
-    algorithm(polarPitch, polarYaw, currentPitch, currentYaw, &pitch, &yaw);
-  }
-
-  // Looping threw the folloing code wihle steps > 0 and reset is false
-  while (stepsPitch + stepsYaw > 0 && !reset) {
-    // If the reset button or switches are pressed, reset becomes true
-    ((digitalRead(switch0) == LOW and digitalRead(switch90) == LOW)) ? reset = true : true;
-
-    // Serial printing pitch and yaw values
-    Serial.println("Pitch: " + String(stepsPitch) + seperator + "Yaw: " + String(stepsYaw));
-    //while (digitalRead(switch90) == LOW) {}
-
-    // Executing motor steps
-    stepsPitch = executeSteps(stepsPitch, pulsPitch2, 0);
-    long _ = executeSteps(stepsPitch, pulsPitch, 0);
-    stepsYaw = executeSteps(stepsYaw, pulsYaw, 1);
-  }
-
-  // Setting the current values to the new values
-  currentPitch = pitch;
-  currentYaw = yaw;
-}
