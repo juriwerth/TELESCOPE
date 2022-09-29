@@ -51,15 +51,15 @@ void loop() {
   // Looping threw the folloing code wihle steps > 0 and reset is false
   while (stepsPitch + stepsYaw > 0 && !reset) {
     // If the reset button or switches are pressed, reset becomes true
-    //(digitalRead(resetBtn) == HIGH  || (digitalRead(switch0) == HIGH and digitalRead(switch90) == HIGH)) ? reset = true : true;
+    ((digitalRead(switch0) == LOW and digitalRead(switch90) == LOW)) ? reset = true : true;
 
     // Serial printing pitch and yaw values
     Serial.println("Pitch: " + String(stepsPitch) + seperator + "Yaw: " + String(stepsYaw));
-    //while (digitalRead(switch90) == LOW) {} 
+    //while (digitalRead(switch90) == LOW) {}
 
     // Executing motor steps
-    stepsPitch = executeSteps(stepsPitch, pulsPitch, 0);
-    long _ = executeSteps(stepsPitch, pulsPitch2, 0);
+    stepsPitch = executeSteps(stepsPitch, pulsPitch2, 0);
+    long _ = executeSteps(stepsPitch, pulsPitch, 0);
     stepsYaw = executeSteps(stepsYaw, pulsYaw, 1);
   }
 
