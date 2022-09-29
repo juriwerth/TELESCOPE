@@ -14,17 +14,17 @@ inline float deltaYaw;
 inline float polarPitch;
 inline float polarYaw;
 inline bool polar = false;
-inline bool prep = false;
+inline bool prep = true;
 inline bool reset = true;
 const inline String seperator = " ";
 
 const inline int pulsPitch = 22;
 const inline int pulsPitch2 = 5;
 const inline int dirPitch = 23;
-const inline int pulsYaw = 2;
-const inline int dirYaw = 0;
+const inline int pulsYaw = 26;
+const inline int dirYaw = 25;
 const inline int switch0 = 32; 
-const inline int switch90 = 23;
+const inline int switch90 = 33;
 const inline int pitch2Enable = 19;
 
 float readSerial(float rotation, bool identification);
