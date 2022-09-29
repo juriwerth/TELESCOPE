@@ -11,7 +11,6 @@ void setup() {
   pinMode(pitch2Enable, OUTPUT);
   pinMode(switch0, INPUT_PULLUP);
   pinMode(switch90, INPUT_PULLUP);
-  //pinMode(resetBtn, INPUT_PULLUP);
 }
 
 // Main loop
@@ -56,7 +55,7 @@ void loop() {
 
     // Serial printing pitch and yaw values
     Serial.println("Pitch: " + String(stepsPitch) + seperator + "Yaw: " + String(stepsYaw));
-    while (digitalRead(switch90) == LOW) {} 
+    //while (digitalRead(switch90) == LOW) {} 
 
     // Executing motor steps
     stepsPitch = executeSteps(stepsPitch, pulsPitch, 0);
@@ -68,4 +67,3 @@ void loop() {
   currentPitch = pitch;
   currentYaw = yaw;
 }
-
