@@ -75,13 +75,16 @@ bool preparation(int puls, int dir, int puls2, int enable) {
   digitalWrite(pitch2Enable, HIGH);
   digitalWrite(dir, HIGH);
   while (digitalRead(switch90) == HIGH) {
+    Serial.println("Ali 1/2");
     _ = executeSteps(1, puls, 1);
   }
   digitalWrite(pitch2Enable, LOW);
-  digitalWrite(dir, LOW);
+  //digitalWrite(dir, LOW);
   while (digitalRead(switch0) == HIGH) {
     _ = executeSteps(1, puls2, 1);
-    (digitalRead(switch90) == HIGH) ? _ = executeSteps(1, puls, 1) : true;
+    if (digitalRead(switch90) == HIGH) {
+      _ = executeSteps(1, puls, 1);
+    }
   }
   return true;
 }
